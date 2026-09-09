@@ -1,0 +1,1089 @@
+{
+  "name": "Voice Agent",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "88903ce7-2386-4582-9f4d-06c8edd14555",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "5cf0ae19-ca5f-44f1-93c7-95b0594c132b",
+      "name": "Webhook - Contact Information & context",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -944,
+        448
+      ],
+      "webhookId": "88903ce7-2386-4582-9f4d-06c8edd14555",
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "d8c0b6fd-c8b3-4d83-8a36-d12871149393",
+              "name": "body.name",
+              "value": "={{ $json.body.name }}",
+              "type": "string"
+            },
+            {
+              "id": "f0d76959-a16b-43a7-87ba-283f0d0256b9",
+              "name": "body.phone",
+              "value": "={{ $json.body.phone }}",
+              "type": "string"
+            },
+            {
+              "id": "bb28305f-71cf-4872-9ecf-81dd0ffa2273",
+              "name": "body.business_name",
+              "value": "={{ $json.body.business_name }}",
+              "type": "string"
+            },
+            {
+              "id": "3d2f2130-c0a7-4e99-8392-17071058ea6c",
+              "name": "body.preferred_language",
+              "value": "={{ $json.body.preferred_language }}",
+              "type": "string"
+            },
+            {
+              "id": "18d5c4c2-561b-4b1d-87aa-f41e57ec74ed",
+              "name": "body.context",
+              "value": "={{ $json.body.context }}",
+              "type": "string"
+            },
+            {
+              "id": "64ab3d4c-6929-42c9-9965-341590eef3d3",
+              "name": "body.preferred_language",
+              "value": "={{ $json.body.preferred_language }}",
+              "type": "string"
+            },
+            {
+              "id": "617c94a3-2ab7-45f2-be1e-784d6ed72936",
+              "name": "body.service",
+              "value": "={{ $json.body.service }}",
+              "type": "string"
+            },
+            {
+              "id": "791beca5-71e5-4518-802a-e3aac192f78b",
+              "name": "body.call_reason",
+              "value": "={{ $json.body.call_reason }}",
+              "type": "string"
+            },
+            {
+              "id": "44bbfed5-9920-4b36-a6e3-1ba5de9794dd",
+              "name": "body.email",
+              "value": "={{ $json.body.email }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "d2a4e209-6482-4f5c-92f1-be186a4ef722",
+      "name": "Prepare contact Data",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.5,
+      "position": [
+        -704,
+        448
+      ],
+      "alwaysOutputData": true,
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "f1951969-6648-4d3f-8cba-04dcb77ba7e1",
+              "leftValue": "={{ $json.body.values() }}",
+              "rightValue": "={{ null }}",
+              "operator": {
+                "type": "array",
+                "operation": "notContains",
+                "rightType": "any"
+              }
+            }
+          ],
+          "combinator": "or"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "id": "fd2b608c-6331-4211-be42-532dc96117c9",
+      "name": "Doesn't have null values?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        -432,
+        448
+      ]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "{\n  \"message\": \"Workflow has started\"\n}",
+        "options": {}
+      },
+      "id": "cf6ba00a-72c8-49b6-921f-988c41bef3df",
+      "name": "Respond for good data",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        -176,
+        432
+      ]
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Simulate a realistic outbound telephone conversation.\n\nCALLER\nBusiness: {{ $json.body.business_name }}\nService: {{ $json.body.service }}\nReason: {{ $json.body.call_reason }}\n\nCONTACT\nName: {{ $json.body.name }}\nPhone: {{ $json.body.phone }}\nEmail: {{ $json.body.email }}\nContext: {{ $json.body.context }}\nPreferred language: {{ $json.body.preferred_language }}\n\nCreate a natural conversation between:\n\n1. A professional AI calling assistant representing {{ $json.body.business_name }}.\n2. {{ $json.body.name }}, the contact receiving the call.\n\nThe assistant is calling about {{ $json.body.service }}.\n\nThe contact should ask realistic questions and make a believable decision.\n\nThe entire conversation must be conducted in {{ $json.body.preferred_language }}.\n\nReturn the result according to the required structured output format.",
+        "hasOutputParser": true,
+        "messages": {
+          "messageValues": []
+        },
+        "batching": {}
+      },
+      "id": "920aa87c-65d6-4bab-86d9-f9c9a2ba8649",
+      "name": "Outbound call simulation",
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.9,
+      "position": [
+        160,
+        432
+      ],
+      "retryOnFail": true,
+      "alwaysOutputData": true,
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "options": {
+          "temperature": 1
+        }
+      },
+      "id": "9b203e4b-f6d3-476a-8782-b09722d7cbcb",
+      "name": "Google Gemini Chat Model",
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1.1,
+      "position": [
+        48,
+        784
+      ],
+      "credentials": {
+        "googlePalmApi": {
+          "id": "IdSTOGuYWwp4xbir",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsonSchemaExample": "{\n  \"call_status\": \"completed\",\n  \"outcome\": \"interested\",\n  \"interest_level\": \"high\",\n  \"callback_time\": \"date and time\",\n  \"phone\":\"+178967899009\",\n  \"email\":\"\",\n  \"summary\": \"The contact expressed interest and requested additional information.\",\n  \"next_action\": \"send_information\",\n  \"transcript\": [\n    {\n      \"speaker\": \"assistant\",\n      \"message\": \"Bonjour, je vous appelle au nom de VinKode.\"\n    },\n    {\n      \"speaker\": \"contact\",\n      \"message\": \"Bonjour, je souhaite obtenir plus d'informations.\"\n    }\n  ]\n}"
+      },
+      "id": "285733a8-bcba-4f05-83b9-9791ca92564a",
+      "name": "Structured Output Parser",
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.3,
+      "position": [
+        384,
+        768
+      ]
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=classify this call:\n\n{{ $json.output.toJsonString() }}",
+        "hasOutputParser": true,
+        "options": {
+          "systemMessage": "You are the Classifier Agent in a multi-agent outbound calling workflow.\n\nYour ONLY responsibility is to classify the outcome and interest level of the conversation.\n\nAnalyze the provided call result and transcript.\n\nDetermine:\n- the overall outcome of the call\n- the contact's level of interest\n- your confidence in the classification\n\nDo NOT:\n- extract additional fields\n- decide the next action\n- write a response\n- modify the transcript\n\nUse only information present in the input.\n\nReturn ONLY the structured output requested by the output parser."
+        }
+      },
+      "id": "5f2d1f6f-dc57-455c-8ce2-ac0fed5e6667",
+      "name": "Classifier Agent - Call Outcome",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        672,
+        -144
+      ],
+      "alwaysOutputData": true,
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "id": "3fbfbb71-f200-4cc8-b882-1136189377cf",
+      "name": "Google Gemini Chat Model2",
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1.1,
+      "position": [
+        672,
+        96
+      ],
+      "credentials": {
+        "googlePalmApi": {
+          "id": "IdSTOGuYWwp4xbir",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "schemaType": "manual",
+        "inputSchema": "{\n  \"type\": \"object\",\n  \"properties\": {\n    \"outcome\": {\n      \"type\": \"string\",\n      \"enum\": [\n      \"interested\",\n      \"not_interested\",\n      \"uncertain\",\n      \"no_answer\"\n      ]\n    },\n    \"interest_level\": {\n      \"type\": \"string\",\n      \"enum\": [\n        \"high\",\n        \"medium\",\n        \"low\",\n        \"none\"\n      ]\n    },\n    \"confidence\": {\n      \"type\": \"number\",\n      \"minimum\": 0,\n      \"maximum\": 1\n    }\n  },\n  \"required\": [\n    \"outcome\",\n    \"interest_level\",\n    \"confidence\"\n  ]\n}"
+      },
+      "id": "d492ccfd-dabe-4b1f-a891-b1e7e582ffad",
+      "name": "Structured Output Parser1",
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.3,
+      "position": [
+        816,
+        112
+      ],
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "jsCode": "const item = $input.first().json;\nconst fallback = {\n  classifier: {\n    outcome: 'unknown',\n    interest_level: 'none',\n    confidence: 0,\n    fallback_used: true,\n    agent_error: item.error ? String(item.error) : 'classifier returned invalid output'\n  }\n};\nconst o = item.output;\nif (!o || typeof o !== 'object') return [{ json: fallback }];\nconst validLevels = ['high', 'medium', 'low', 'none'];\nconst level = String(o.interest_level || '').toLowerCase();\nif (!o.outcome || !validLevels.includes(level)) return [{ json: fallback }];\nreturn [{ json: { classifier: { outcome: String(o.outcome), interest_level: level, confidence: typeof o.confidence === 'number' ? o.confidence : 0.5, fallback_used: false } } }];"
+      },
+      "id": "de9873b3-00b8-472c-ae0c-c4335b1a6e4f",
+      "name": "Validate Classifier Output",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1040,
+        -144
+      ]
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Extract the relevant information from this call:\n\n{{ $json.output.toJsonString() }}",
+        "hasOutputParser": true,
+        "options": {
+          "systemMessage": "You are the Extractor Agent in a multi-agent outbound calling workflow.\n\nYour ONLY responsibility is to extract structured information\nfrom the provided call result and transcript.\n\nExtract only information that is explicitly present in the input.\n\nYou should identify:\n- contact name\n- contact email\n- phone number if available\n- callback date/time\n- requested information\n- product or service discussed\n- important questions or concerns\n- a concise summary of the conversation\n\nIf a field is not available, return null.\n\nDo NOT:\n- classify the contact's interest\n- decide the next action\n- generate a response to the contact\n- invent or infer information that is not present\n- modify the original transcript\n\nReturn ONLY the structured output requested by the output parser."
+        }
+      },
+      "id": "efa5a1d6-648d-4394-8798-b3ff0d0c7b4a",
+      "name": "Extractor Agent - Call Details",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        672,
+        912
+      ],
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "id": "8f95fea1-b158-4942-a6cd-34f49850659d",
+      "name": "Google Gemini Chat Model3",
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1.1,
+      "position": [
+        672,
+        1168
+      ],
+      "credentials": {
+        "googlePalmApi": {
+          "id": "IdSTOGuYWwp4xbir",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "schemaType": "manual",
+        "inputSchema": "{\n  \"type\": \"object\",\n  \"properties\": {\n    \"contact_name\": {\n      \"type\": \"string\"\n    },\n    \"contact_email\": {\n      \"type\": \"string\"\n    },\n    \"phone_number\": {\n      \"type\": \"string\"\n    },\n    \"callback_time\": {\n      \"type\": \"string\"\n    },\n    \"requested_information\": {\n      \"type\": \"string\"\n    },\n    \"product_or_service\": {\n      \"type\": \"string\"\n    },\n    \"questions_or_concerns\": {\n      \"type\": \"array\",\n      \"items\": {\n        \"type\": \"string\"\n      }\n    },\n    \"summary\": {\n      \"type\": \"string\"\n    }\n  },\n  \"required\": [\n    \"contact_name\",\n    \"contact_email\",\n    \"phone_number\",\n    \"callback_time\",\n    \"requested_information\",\n    \"product_or_service\",\n    \"questions_or_concerns\",\n    \"summary\"\n  ]\n}"
+      },
+      "id": "d81ef787-4792-45af-9dd0-9abe735ae962",
+      "name": "Structured Output Parser2",
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.3,
+      "position": [
+        816,
+        1184
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const item = $input.first().json;\nconst src = $('Outbound call simulation').first().json.output || {};\nconst contact = $('Prepare contact Data').first().json.body || {};\nconst fallback = {\n  extractor: {\n    contact_name: contact.name || null,\n    contact_email: contact.email || null,\n    phone_number: contact.phone || src.phone || null,\n    callback_time: null,\n    requested_information: null,\n    product_or_service: contact.service || null,\n    questions_or_concerns: [],\n    summary: src.summary || 'Call completed; extraction failed, using call summary.',\n    fallback_used: true,\n    agent_error: item.error ? String(item.error) : 'extractor returned invalid output'\n  }\n};\nconst o = item.output;\nif (!o || typeof o !== 'object' || (!o.contact_name && !o.summary)) return [{ json: fallback }];\nreturn [{ json: { extractor: {\n  contact_name: o.contact_name ?? null,\n  contact_email: o.contact_email ?? null,\n  phone_number: o.phone_number ?? contact.phone ?? null,\n  callback_time: o.callback_time ?? null,\n  requested_information: o.requested_information ?? null,\n  product_or_service: o.product_or_service ?? contact.service ?? null,\n  questions_or_concerns: Array.isArray(o.questions_or_concerns) ? o.questions_or_concerns : [],\n  summary: o.summary ?? src.summary ?? null,\n  fallback_used: false\n} } }];"
+      },
+      "id": "08c6df8e-730f-46b3-8a81-e4f098dbb558",
+      "name": "Validate Extractor Output",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1040,
+        912
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.vapi.ai/call",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpTemplatedCustomAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"assistantId\": \"eab99008-e79f-4686-b35f-c79a2c268d8d\",\n  \"phoneNumberId\": \"69463e2c-cb66-45e1-b3a8-491004ed5ae0\",\n  \"customer\": {\n    \"number\": \"{{ $json.body.phone }}\",\n    \"name\": \"{{ $json.body.name }}\"\n  },\n  \"assistantOverrides\": {\n    \"variableValues\": {\n      \"contact_name\": \"{{ $json.body.name }}\",\n      \"business_name\": \"{{ $json.body.business_name }}\",\n      \"service\": \"{{ $json.body.service }}\",\n      \"call_reason\": \"{{ $json.body.call_reason }}\",\n      \"context\": \"{{ $json.body.context }}\",\n      \"preferred_language\": \"{{ $json.body.preferred_language }}\"\n    }\n  }\n}",
+        "options": {}
+      },
+      "id": "db1d1c4e-9b85-47e0-8da5-6e58ad705993",
+      "name": "Voice ai API (VAPI)",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.5,
+      "position": [
+        0,
+        0
+      ],
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "respondWith": "text",
+        "responseBody": "=Payload error, check fields before proceed\nhere an example \n{\n    \"name\":\"Peter Parker\",\n    \"phone\":\"+12397855563\",\n    \"business_name\":\"Vinkode Insurance\",\n    \"preferred_language\":\"French\",\n    \"context\":\"The customer has a car insurance policy that expires in 30 days and has not yet confirmed the renewal\",\n    \"service\":\"Car insurance renewal\",\n    \"call_reason\":\"Confirm whether the customer wants to renew the policy and answer any questions about the coverage\"\n}",
+        "options": {}
+      },
+      "id": "f8c134a0-261b-4475-bc82-7b47839b97b2",
+      "name": "Respond for bad data",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        -272,
+        736
+      ]
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "combineBy": "combineAll",
+        "options": {}
+      },
+      "id": "b4ce24ea-b45c-4e71-959b-4f742892ade7",
+      "name": "Merge",
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        1296,
+        432
+      ]
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Analyze the following results and determine the next action.\n\nCLASSIFIER:\n{{ $json.classifier?.toJsonString() ?? \"unavailable\" }}\n\nEXTRACTOR:\n{{ $json.extractor?.toJsonString() ?? \"unavailable\" }}\n\nNote: if a result contains fallback_used: true, that agent output was invalid and fallback defaults were used.",
+        "hasOutputParser": true,
+        "options": {
+          "systemMessage": "You are the Reasoner Agent in a multi-agent outbound calling workflow.\n\nYour ONLY responsibility is to determine the appropriate next action\nbased on the classifier and extractor results.\n\nConsider:\n- the classified outcome\n- the interest level\n- extracted contact information\n- requested information\n- callback information\n- questions or concerns\n\nChoose the most appropriate operational action.\n\nPossible actions:\n- send_information\n- schedule_callback\n- follow_up\n- escalate\n- no_action\n\nDetermine the priority:\n- low\n- medium\n- high\n\nProvide a short explanation for the decision.\n\nDo NOT:\n- reclassify the conversation\n- extract additional information\n- write a customer-facing response\n- invent information\n\nIf the available information is insufficient, choose \"follow_up\".\n\nReturn ONLY the structured output requested by the output parser."
+        }
+      },
+      "id": "6292e085-a6fe-44c4-a88e-e224ba0b75f4",
+      "name": "Reasoner Agent - Next Action",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        1472,
+        432
+      ],
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "id": "0de0ecb0-7d5a-46c8-b9d3-9635b5ae59ba",
+      "name": "Google Gemini Chat Model1",
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1.1,
+      "position": [
+        1472,
+        688
+      ],
+      "credentials": {
+        "googlePalmApi": {
+          "id": "IdSTOGuYWwp4xbir",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "schemaType": "manual",
+        "inputSchema": "{\n  \"type\": \"object\",\n  \"properties\": {\n    \"next_action\": {\n      \"type\": \"string\",\n      \"enum\": [\n        \"send_information\",\n        \"schedule_callback\",\n        \"follow_up\",\n        \"escalate\",\n        \"no_action\"\n      ]\n    },\n    \"priority\": {\n      \"type\": \"string\",\n      \"enum\": [\n        \"low\",\n        \"medium\",\n        \"high\"\n      ]\n    },\n    \"reason\": {\n      \"type\": \"string\"\n    }\n  },\n  \"required\": [\n    \"next_action\",\n    \"priority\",\n    \"reason\"\n  ]\n}"
+      },
+      "id": "fbe8c6ba-9bdd-45c5-8417-b088968e23c5",
+      "name": "Structured Output Parser3",
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.3,
+      "position": [
+        1616,
+        688
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const item = $input.first().json;\nconst validActions = ['send_information', 'schedule_callback', 'follow_up', 'escalate', 'no_action'];\nconst validPriorities = ['low', 'medium', 'high'];\nconst o = item.output;\nif (!o || typeof o !== 'object' || !validActions.includes(o.next_action)) {\n  return [{ json: { output: {\n    next_action: 'follow_up',\n    priority: 'medium',\n    reason: 'Reasoner output unavailable or invalid; defaulting to follow_up.',\n    fallback_used: true,\n    agent_error: item.error ? String(item.error) : 'reasoner returned invalid output'\n  } } }];\n}\nreturn [{ json: { output: {\n  next_action: o.next_action,\n  priority: validPriorities.includes(o.priority) ? o.priority : 'medium',\n  reason: o.reason || 'No reason provided.',\n  fallback_used: false\n} } }];"
+      },
+      "id": "06530d56-f1a4-45fb-808b-a520a65eda60",
+      "name": "Validate Reasoner Output",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1744,
+        432
+      ]
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Compose the final response using the following information.\n\nTRANSCRIPT:\n{{ $('Outbound call simulation').item.json.output.transcript?.toJsonString() ?? \"No transcript available\" }}\n\nEXTRACTED INFORMATION:\n{{ $('Validate Extractor Output').item.json.extractor?.toJsonString() ?? \"unavailable\" }}\nREASONER DECISION:\n{{ $json.output?.toJsonString() ?? \"unavailable; treat next_action as follow_up\" }}\n",
+        "hasOutputParser": true,
+        "options": {
+          "systemMessage": "You are the Composer Agent in a multi-agent outbound calling workflow.\n\nYour ONLY responsibility is to compose the final customer-facing\nresponse based on the conversation and the decisions made by the\nother agents.\n\nUse:\n- the original conversation/transcript\n- the extracted information\n- the reasoner's next action\n\nThe response must:\n- be concise\n- be professional\n- match the context of the conversation\n- clearly communicate the next step\n- use the same language as the contact when possible\n\nDo NOT:\n- change the classification\n- change the interest level\n- change the reasoner's decision\n- invent information\n- make a new business decision\n\nIf the next action is \"send_information\", acknowledge the request\nand indicate that the requested information will be provided.\n\nIf the next action is \"schedule_callback\", confirm the callback\ninformation when available.\n\nIf the next action is \"follow_up\", ask for the missing information\nneeded to continue.\n\nIf the next action is \"escalate\", politely explain that the request\nwill be passed to the appropriate person.\n\nReturn ONLY the structured output requested by the output parser."
+        }
+      },
+      "id": "332829bf-a27b-4f5f-9255-a3c27659b91a",
+      "name": "Composer Agent - Customer Response",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        1888,
+        432
+      ],
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "id": "08169e39-ea7d-4f38-9d31-4494f51032cd",
+      "name": "Composer Model",
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1.1,
+      "position": [
+        1888,
+        640
+      ],
+      "credentials": {
+        "googlePalmApi": {
+          "id": "IdSTOGuYWwp4xbir",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "schemaType": "manual",
+        "inputSchema": "{\n  \"type\": \"object\",\n  \"properties\": {\n    \"response\": {\n      \"type\": \"string\"\n    },\n    \"follow_up_required\": {\n      \"type\": \"boolean\"\n    }\n  },\n  \"required\": [\n    \"response\",\n    \"follow_up_required\"\n  ]\n}"
+      },
+      "id": "accde064-bbcf-487a-9ee1-899f9ce8e7a6",
+      "name": "Structured Output Parser4",
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.3,
+      "position": [
+        2032,
+        640
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const safe = (name) => {\n  try {\n    const j = $(name).first().json;\n    return (j && typeof j === 'object' && !j.error) ? (j.output ?? j) : null;\n  } catch (e) { return null; }\n};\n\nconst callResult = safe('Outbound call simulation') || {};\nconst contact = $('Prepare contact Data').first().json.body || {};\nconst classifierRaw = safe('Classifier Agent - Call Outcome') || {};\nconst reasonerRaw = safe('Reasoner Agent - Next Action') || {};\nconst composerRaw = $input.first().json || {};\nconst composer = (composerRaw && typeof composerRaw === 'object' && !composerRaw.error) ? (composerRaw.output || {}) : {};\n\n// Normalized extractor output (already validated by 'Edit Fields'); fall back to raw agent output or contact data\nconst normalized = safe('Validate Extractor Output') || {};\nconst extractorRaw = safe('Extractor Agent - Call Details') || {};\nconst extractor = normalized.extractor || (Object.keys(extractorRaw).length ? extractorRaw : {\n  contact_name: contact.name ?? null,\n  contact_email: contact.email ?? null,\n  phone_number: contact.phone ?? callResult.phone ?? null,\n  callback_time: null,\n  summary: callResult.summary ?? 'No reliable summary available.',\n  fallback_used: true\n});\n\nconst classifier = (classifierRaw.outcome || classifierRaw.interest_level) ? classifierRaw : {\n  outcome: 'uncertain',\n  interest_level: 'none',\n  confidence: 0,\n  fallback_used: true\n};\n\nconst reasoner = reasonerRaw.next_action ? reasonerRaw : {\n  next_action: 'follow_up',\n  priority: 'medium',\n  reason: 'The appropriate action could not be determined reliably.',\n  fallback_used: true\n};\n\nreturn [\n  {\n    json: {\n      call_status: callResult.call_status ?? 'completed',\n\n      outcome: classifier.outcome ?? 'uncertain',\n\n      interest_level: classifier.interest_level ?? 'none',\n\n      callback_time:\n        extractor.callback_time ??\n        callResult.callback_time ??\n        null,\n\n      summary:\n        extractor.summary ??\n        callResult.summary ??\n        'No reliable summary available.',\n\n      next_action:\n        reasoner.next_action ?? 'follow_up',\n\n      transcript: callResult.transcript ?? [],\n\n      classification: {\n        outcome: classifier.outcome ?? 'uncertain',\n        interest_level: classifier.interest_level ?? 'none',\n        confidence: classifier.confidence ?? 0\n      },\n\n      extraction: extractor,\n\n      decision: {\n        next_action: reasoner.next_action ?? 'follow_up',\n        priority: reasoner.priority ?? 'medium',\n        reason:\n          reasoner.reason ??\n          'The appropriate action could not be determined reliably.'\n      },\n\n      response: {\n        message:\n          composer.response ??\n          'Thank you for your interest. We will follow up regarding your request.',\n        follow_up_required:\n          composer.follow_up_required ?? true\n      }\n    }\n  }\n];"
+      },
+      "id": "933d5ceb-db52-41a1-8613-6e33f47522d7",
+      "name": "Combiner",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2256,
+        432
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "1c10a9f6-4df3-4b3a-82bf-9b8c1e68f26b",
+              "leftValue": "={{ $json.interest_level }}",
+              "rightValue": "high",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            },
+            {
+              "id": "6a7ecead-2a75-40c7-b953-4d25bbffde38",
+              "leftValue": "={{ $json.interest_level }}",
+              "rightValue": "High",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "or"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "id": "a999be24-39af-4987-8f5e-1702fdfad147",
+      "name": "High interest?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        2496,
+        432
+      ]
+    },
+    {
+      "parameters": {
+        "authentication": "oAuth2",
+        "select": "channel",
+        "channelId": {
+          "__rl": true,
+          "value": "C0BUB56LQKH",
+          "mode": "list",
+          "cachedResultName": "gayiti-test"
+        },
+        "text": "=🚨 *HIGH-VALUE CALL*\n\n\n👤 *CUSTOMER*\n• Name: {{ $('Combiner').item.json.extraction.contact_name }}\n• Email: {{ $('Combiner').item.json.extraction.contact_email }}\n• Phone: {{ $('Combiner').item.json.extraction.phone_number }}\n• Business: {{ $('Prepare contact Data').item.json.body.business_name }}\n\n\n📞 *CALL OUTCOME*\n• Service: {{ $('Combiner').item.json.extraction.product_or_service }}\n• Status: {{ $('Combiner').item.json.call_status }}\n• Outcome: {{ $('Combiner').item.json.outcome }}\n• Interest: {{ $('Combiner').item.json.interest_level }}\n• Confidence: {{ $('Combiner').item.json.classification.confidence }}\n\n\n📝 *CUSTOMER NEEDS*\n• Request: {{ $('Combiner').item.json.extraction.requested_information }}\n• Questions / Concerns: {{ $('Combiner').item.json.extraction.questions_or_concerns }}\n• Callback: {{ $('Combiner').item.json.callback_time }}\n\n\n💡 *AGENT DECISION*\n• Priority: {{ $('Combiner').item.json.decision.priority }}\n• Next Action: {{ $('Combiner').item.json.decision.next_action }}\n• Reason: {{ $('Combiner').item.json.decision.reason }}\n\n\n📋 *SUMMARY*\n{{ $('Combiner').item.json.extraction.summary }}\n",
+        "otherOptions": {}
+      },
+      "id": "612ac110-5f70-4586-94c4-4774269d7832",
+      "name": "Send Slack Alert",
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 2.7,
+      "position": [
+        2768,
+        336
+      ],
+      "alwaysOutputData": true,
+      "webhookId": "7f6a6cf6-4340-440d-9d6f-45da41d04bb5",
+      "credentials": {
+        "slackOAuth2Api": {
+          "id": "ZBvSpxyF4Q1VB6Wz",
+          "name": "Slack account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1UsaeoPEvmqrnRLbhBdGETyq3vZIMz926t2hwUG25A68",
+          "mode": "list",
+          "cachedResultName": "AI Call Records",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1UsaeoPEvmqrnRLbhBdGETyq3vZIMz926t2hwUG25A68/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Feuille 1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1UsaeoPEvmqrnRLbhBdGETyq3vZIMz926t2hwUG25A68/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "call_status": "={{ $json.output.call_status }}",
+            "summary": "={{ $json.output.summary }}",
+            "phone": "={{ $('Prepare contact Data').item.json.body.phone }}",
+            "contact_name": "={{ $('Prepare contact Data').item.json.body.name }}",
+            "business_name": "={{ $('Prepare contact Data').item.json.body.business_name }}",
+            "service": "={{ $('Prepare contact Data').item.json.body.service }}",
+            "interest_level": "={{ $json.output.interest_level }}",
+            "outcome": "={{ $json.output.outcome }}",
+            "callback_time": "={{ $json.output.callback_time }}",
+            "next_action": "={{ $json.output.next_action }}",
+            "transcript": "={{ $json.output.transcript }}",
+            "created_at": "={{ DateTime.now() }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "created_at",
+              "displayName": "created_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "contact_name",
+              "displayName": "contact_name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "phone",
+              "displayName": "phone",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "business_name",
+              "displayName": "business_name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "service",
+              "displayName": "service",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "call_status",
+              "displayName": "call_status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "outcome",
+              "displayName": "outcome",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "interest_level",
+              "displayName": "interest_level",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "callback_time",
+              "displayName": "callback_time",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "summary",
+              "displayName": "summary",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "next_action",
+              "displayName": "next_action",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "transcript",
+              "displayName": "transcript",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "output",
+              "displayName": "output",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "id": "29422bd2-99a7-468d-b59d-8812f8fdeff1",
+      "name": "Google Sheets",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        2784,
+        576
+      ],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "ODj3yHn9dH8R6DCl",
+          "name": "Google Sheets account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Webhook - Contact Information & context": {
+      "main": [
+        [
+          {
+            "node": "Prepare contact Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare contact Data": {
+      "main": [
+        [
+          {
+            "node": "Doesn't have null values?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Doesn't have null values?": {
+      "main": [
+        [
+          {
+            "node": "Respond for good data",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Respond for bad data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Respond for good data": {
+      "main": [
+        [
+          {
+            "node": "Outbound call simulation",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Voice ai API (VAPI)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Outbound call simulation": {
+      "main": [
+        [
+          {
+            "node": "Classifier Agent - Call Outcome",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Extractor Agent - Call Details",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Outbound call simulation",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Structured Output Parser": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "Outbound call simulation",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Classifier Agent - Call Outcome": {
+      "main": [
+        [
+          {
+            "node": "Validate Classifier Output",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model2": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Classifier Agent - Call Outcome",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Structured Output Parser1": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "Classifier Agent - Call Outcome",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Validate Classifier Output": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extractor Agent - Call Details": {
+      "main": [
+        [
+          {
+            "node": "Validate Extractor Output",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model3": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Extractor Agent - Call Details",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Structured Output Parser2": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "Extractor Agent - Call Details",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Validate Extractor Output": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Merge": {
+      "main": [
+        [
+          {
+            "node": "Reasoner Agent - Next Action",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Reasoner Agent - Next Action": {
+      "main": [
+        [
+          {
+            "node": "Validate Reasoner Output",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Reasoner Agent - Next Action",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Structured Output Parser3": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "Reasoner Agent - Next Action",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Validate Reasoner Output": {
+      "main": [
+        [
+          {
+            "node": "Composer Agent - Customer Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Composer Agent - Customer Response": {
+      "main": [
+        [
+          {
+            "node": "Combiner",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Composer Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Composer Agent - Customer Response",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Structured Output Parser4": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "Composer Agent - Customer Response",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Combiner": {
+      "main": [
+        [
+          {
+            "node": "High interest?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "High interest?": {
+      "main": [
+        [
+          {
+            "node": "Send Slack Alert",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Google Sheets",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "f21c2eaa-2e67-4201-a639-0a674dba9c63",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "737dc2d2fdd870db3c00e9004ab56136d497c22adbb3cea3b47f263451c7680b"
+  },
+  "nodeGroups": [],
+  "id": "KXn5SWivOENMSZsV",
+  "tags": []
+}
