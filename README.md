@@ -258,6 +258,8 @@ CLASSIFIER:
 
 EXTRACTOR:
 {{ $json.EXTRACTOR }}
+
+Note: if a result contains fallback_used: true, that agent output was invalid and fallback defaults were used.
 ```
 
 ### Output Schema
