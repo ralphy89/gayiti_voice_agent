@@ -2,6 +2,8 @@
 
 The workflow uses a team of four specialized AI agents. Each agent has one clearly defined responsibility, a dedicated system prompt, and a structured output schema. The agents run in parallel when their tasks are independent, then their outputs are combined and passed to the next agent.
 
+![n8n Workflow Canvas](screenshot_canvas_n8n.jpeg "Optional title")
+
 ---
 
 ## 1. Classifier Agent
