@@ -145,7 +145,7 @@
     {
       "parameters": {
         "promptType": "define",
-        "text": "=Simulate a realistic outbound telephone conversation.\n\nCALLER\nBusiness: {{ $json.body.business_name }}\nService: {{ $json.body.service }}\nReason: {{ $json.body.call_reason }}\n\nCONTACT\nName: {{ $json.body.name }}\nPhone: {{ $json.body.phone }}\nEmail: {{ $json.body.email }}\nContext: {{ $json.body.context }}\nPreferred language: {{ $json.body.preferred_language }}\n\nCreate a natural conversation between:\n\n1. A professional AI calling assistant representing {{ $json.body.business_name }}.\n2. {{ $json.body.name }}, the contact receiving the call.\n\nThe assistant is calling about {{ $json.body.service }}.\n\nThe contact should ask realistic questions and make a believable decision.\n\nThe entire conversation must be conducted in {{ $json.body.preferred_language }}.\n\nReturn the result according to the required structured output format.",
+        "text": "=Simulate a realistic outbound telephone conversation.\n\nCALLER\nBusiness: {{ $json.body.business_name }}\nService: {{ $json.body.service }}\nReason: {{ $json.body.call_reason }}\n\nCONTACT\nName: {{ $json.body.name }}\nPhone: {{ $json.body.phone }}\nEmail: {{ $json.body.email }}\nContext: {{ $json.body.context }}\nPreferred language: {{ $json.body.preferred_language }}\n\nCreate a natural, varied conversation between:\n\n1. A professional AI calling assistant representing {{ $json.body.business_name }}.\n2. {{ $json.body.name }}, the contact receiving the call.\n\nThe assistant is calling about {{ $json.body.service }}.\n\nGuidelines:\n- The contact should ask realistic questions, express doubts, or raise concerns based on the provided context.\n- The decision should feel believable: sometimes interested, sometimes hesitant, sometimes not interested.\n- The assistant should respond professionally but adapt tone and detail to the contact’s reactions.\n- The conversation must be conducted in {{ $json.body.preferred_language }}.\n- Allow outcomes to vary (interested, not interested, neutral) depending on the flow of the dialogue.\n- Include natural pauses, clarifications, or follow-up questions to make the exchange more authentic.\n\nReturn the result according to the required structured output format.\n",
         "hasOutputParser": true,
         "messages": {
           "messageValues": []
@@ -166,28 +166,8 @@
     },
     {
       "parameters": {
-        "options": {
-          "temperature": 1
-        }
-      },
-      "id": "9b203e4b-f6d3-476a-8782-b09722d7cbcb",
-      "name": "Google Gemini Chat Model",
-      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
-      "typeVersion": 1.1,
-      "position": [
-        48,
-        784
-      ],
-      "credentials": {
-        "googlePalmApi": {
-          "id": "IdSTOGuYWwp4xbir",
-          "name": "Google Gemini(PaLM) Api account"
-        }
-      }
-    },
-    {
-      "parameters": {
-        "jsonSchemaExample": "{\n  \"call_status\": \"completed\",\n  \"outcome\": \"interested\",\n  \"interest_level\": \"high\",\n  \"callback_time\": \"date and time\",\n  \"phone\":\"+178967899009\",\n  \"email\":\"\",\n  \"summary\": \"The contact expressed interest and requested additional information.\",\n  \"next_action\": \"send_information\",\n  \"transcript\": [\n    {\n      \"speaker\": \"assistant\",\n      \"message\": \"Bonjour, je vous appelle au nom de VinKode.\"\n    },\n    {\n      \"speaker\": \"contact\",\n      \"message\": \"Bonjour, je souhaite obtenir plus d'informations.\"\n    }\n  ]\n}"
+        "schemaType": "manual",
+        "inputSchema": "{\n  \"title\": \"CallOutcome\",\n  \"type\": \"object\",\n  \"properties\": {\n    \"call_status\": {\n      \"type\": \"string\",\n      \"enum\": [\"completed\", \"failed\", \"in_progress\"]\n    },\n    \"outcome\": {\n      \"type\": \"string\",\n      \"enum\": [\"interested\", \"not_interested\", \"neutral\"]\n    },\n    \"interest_level\": {\n      \"type\": \"string\",\n      \"enum\": [\"low\", \"medium\", \"high\"]\n    },\n    \"callback_time\": {\n      \"type\": [\"string\", \"null\"],\n      \"description\": \"Date and time for callback if scheduled\"\n    },\n    \"phone\": {\n      \"type\": \"string\"\n    },\n    \"email\": {\n      \"type\": \"string\"\n    },\n    \"summary\": {\n      \"type\": \"string\"\n    },\n    \"next_action\": {\n      \"type\": \"string\",\n      \"enum\": [\"send_information\", \"schedule_callback\", \"end_conversation\"]\n    },\n    \"transcript\": {\n      \"type\": \"array\",\n      \"items\": {\n        \"type\": \"object\",\n        \"properties\": {\n          \"speaker\": {\n            \"type\": \"string\",\n            \"enum\": [\"assistant\", \"contact\"]\n          },\n          \"message\": {\n            \"type\": \"string\"\n          }\n        },\n        \"required\": [\"speaker\", \"message\"]\n      }\n    }\n  },\n  \"required\": [\n    \"call_status\",\n    \"outcome\",\n    \"interest_level\",\n    \"phone\",\n    \"summary\",\n    \"next_action\",\n    \"transcript\"\n  ]\n}\n"
       },
       "id": "285733a8-bcba-4f05-83b9-9791ca92564a",
       "name": "Structured Output Parser",
@@ -216,26 +196,9 @@
         -144
       ],
       "alwaysOutputData": true,
+      "retryOnFail": true,
+      "maxTries": 3,
       "onError": "continueRegularOutput"
-    },
-    {
-      "parameters": {
-        "options": {}
-      },
-      "id": "3fbfbb71-f200-4cc8-b882-1136189377cf",
-      "name": "Google Gemini Chat Model2",
-      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
-      "typeVersion": 1.1,
-      "position": [
-        672,
-        96
-      ],
-      "credentials": {
-        "googlePalmApi": {
-          "id": "IdSTOGuYWwp4xbir",
-          "name": "Google Gemini(PaLM) Api account"
-        }
-      }
     },
     {
       "parameters": {
@@ -282,31 +245,13 @@
         672,
         912
       ],
+      "retryOnFail": true,
       "onError": "continueRegularOutput"
     },
     {
       "parameters": {
-        "options": {}
-      },
-      "id": "8f95fea1-b158-4942-a6cd-34f49850659d",
-      "name": "Google Gemini Chat Model3",
-      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
-      "typeVersion": 1.1,
-      "position": [
-        672,
-        1168
-      ],
-      "credentials": {
-        "googlePalmApi": {
-          "id": "IdSTOGuYWwp4xbir",
-          "name": "Google Gemini(PaLM) Api account"
-        }
-      }
-    },
-    {
-      "parameters": {
         "schemaType": "manual",
-        "inputSchema": "{\n  \"type\": \"object\",\n  \"properties\": {\n    \"contact_name\": {\n      \"type\": \"string\"\n    },\n    \"contact_email\": {\n      \"type\": \"string\"\n    },\n    \"phone_number\": {\n      \"type\": \"string\"\n    },\n    \"callback_time\": {\n      \"type\": \"string\"\n    },\n    \"requested_information\": {\n      \"type\": \"string\"\n    },\n    \"product_or_service\": {\n      \"type\": \"string\"\n    },\n    \"questions_or_concerns\": {\n      \"type\": \"array\",\n      \"items\": {\n        \"type\": \"string\"\n      }\n    },\n    \"summary\": {\n      \"type\": \"string\"\n    }\n  },\n  \"required\": [\n    \"contact_name\",\n    \"contact_email\",\n    \"phone_number\",\n    \"callback_time\",\n    \"requested_information\",\n    \"product_or_service\",\n    \"questions_or_concerns\",\n    \"summary\"\n  ]\n}"
+        "inputSchema": "{\n  \"type\": \"OBJECT\",\n  \"properties\": {\n    \"contact_name\": {\n      \"type\": \"STRING\"\n    },\n    \"contact_email\": {\n      \"type\": \"STRING\"\n    },\n    \"phone_number\": {\n      \"type\": \"STRING\"\n    },\n    \"callback_time\": {\n      \"type\": \"STRING\"\n    },\n    \"requested_information\": {\n      \"type\": \"STRING\"\n    },\n    \"product_or_service\": {\n      \"type\": \"STRING\"\n    },\n    \"questions_or_concerns\": {\n      \"type\": \"ARRAY\",\n      \"items\": {\n        \"type\": \"STRING\"\n      }\n    },\n    \"summary\": {\n      \"type\": \"STRING\"\n    }\n  },\n  \"required\": [\n    \"contact_name\",\n    \"contact_email\",\n    \"phone_number\",\n    \"callback_time\",\n    \"requested_information\",\n    \"product_or_service\",\n    \"questions_or_concerns\",\n    \"summary\"\n  ]\n}"
       },
       "id": "d81ef787-4792-45af-9dd0-9abe735ae962",
       "name": "Structured Output Parser2",
@@ -398,26 +343,8 @@
         1472,
         432
       ],
+      "retryOnFail": true,
       "onError": "continueRegularOutput"
-    },
-    {
-      "parameters": {
-        "options": {}
-      },
-      "id": "0de0ecb0-7d5a-46c8-b9d3-9635b5ae59ba",
-      "name": "Google Gemini Chat Model1",
-      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
-      "typeVersion": 1.1,
-      "position": [
-        1472,
-        688
-      ],
-      "credentials": {
-        "googlePalmApi": {
-          "id": "IdSTOGuYWwp4xbir",
-          "name": "Google Gemini(PaLM) Api account"
-        }
-      }
     },
     {
       "parameters": {
@@ -463,26 +390,8 @@
         1888,
         432
       ],
+      "retryOnFail": true,
       "onError": "continueRegularOutput"
-    },
-    {
-      "parameters": {
-        "options": {}
-      },
-      "id": "08169e39-ea7d-4f38-9d31-4494f51032cd",
-      "name": "Composer Model",
-      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
-      "typeVersion": 1.1,
-      "position": [
-        1888,
-        640
-      ],
-      "credentials": {
-        "googlePalmApi": {
-          "id": "IdSTOGuYWwp4xbir",
-          "name": "Google Gemini(PaLM) Api account"
-        }
-      }
     },
     {
       "parameters": {
@@ -769,6 +678,103 @@
           "name": "Google Sheets account"
         }
       }
+    },
+    {
+      "parameters": {
+        "options": {
+          "temperature": 1
+        }
+      },
+      "id": "9b203e4b-f6d3-476a-8782-b09722d7cbcb",
+      "name": "Google Gemini Chat Model",
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1.1,
+      "position": [
+        48,
+        784
+      ],
+      "credentials": {
+        "googlePalmApi": {
+          "id": "JUL556MR8dbEpjBt",
+          "name": "Google Gemini(PaLM) Api account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "id": "08169e39-ea7d-4f38-9d31-4494f51032cd",
+      "name": "Composer Model",
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1.1,
+      "position": [
+        1888,
+        640
+      ],
+      "credentials": {
+        "googlePalmApi": {
+          "id": "IdSTOGuYWwp4xbir",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "id": "0de0ecb0-7d5a-46c8-b9d3-9635b5ae59ba",
+      "name": "Google Gemini Chat Model1",
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1.1,
+      "position": [
+        1472,
+        688
+      ],
+      "credentials": {
+        "googlePalmApi": {
+          "id": "JUL556MR8dbEpjBt",
+          "name": "Google Gemini(PaLM) Api account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "id": "8f95fea1-b158-4942-a6cd-34f49850659d",
+      "name": "Google Gemini Chat Model3",
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1.1,
+      "position": [
+        672,
+        1168
+      ],
+      "credentials": {
+        "googlePalmApi": {
+          "id": "JUL556MR8dbEpjBt",
+          "name": "Google Gemini(PaLM) Api account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "id": "3fbfbb71-f200-4cc8-b882-1136189377cf",
+      "name": "Google Gemini Chat Model2",
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1.1,
+      "position": [
+        672,
+        96
+      ],
+      "credentials": {
+        "googlePalmApi": {
+          "id": "JUL556MR8dbEpjBt",
+          "name": "Google Gemini(PaLM) Api account 2"
+        }
+      }
     }
   ],
   "pinData": {},
@@ -845,17 +851,6 @@
         ]
       ]
     },
-    "Google Gemini Chat Model": {
-      "ai_languageModel": [
-        [
-          {
-            "node": "Outbound call simulation",
-            "type": "ai_languageModel",
-            "index": 0
-          }
-        ]
-      ]
-    },
     "Structured Output Parser": {
       "ai_outputParser": [
         [
@@ -873,17 +868,6 @@
           {
             "node": "Validate Classifier Output",
             "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Google Gemini Chat Model2": {
-      "ai_languageModel": [
-        [
-          {
-            "node": "Classifier Agent - Call Outcome",
-            "type": "ai_languageModel",
             "index": 0
           }
         ]
@@ -917,17 +901,6 @@
           {
             "node": "Validate Extractor Output",
             "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Google Gemini Chat Model3": {
-      "ai_languageModel": [
-        [
-          {
-            "node": "Extractor Agent - Call Details",
-            "type": "ai_languageModel",
             "index": 0
           }
         ]
@@ -977,17 +950,6 @@
         ]
       ]
     },
-    "Google Gemini Chat Model1": {
-      "ai_languageModel": [
-        [
-          {
-            "node": "Reasoner Agent - Next Action",
-            "type": "ai_languageModel",
-            "index": 0
-          }
-        ]
-      ]
-    },
     "Structured Output Parser3": {
       "ai_outputParser": [
         [
@@ -1016,17 +978,6 @@
           {
             "node": "Combiner",
             "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Composer Model": {
-      "ai_languageModel": [
-        [
-          {
-            "node": "Composer Agent - Customer Response",
-            "type": "ai_languageModel",
             "index": 0
           }
         ]
@@ -1071,6 +1022,61 @@
           }
         ]
       ]
+    },
+    "Google Gemini Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Outbound call simulation",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Composer Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Composer Agent - Customer Response",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Reasoner Agent - Next Action",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model3": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Extractor Agent - Call Details",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model2": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Classifier Agent - Call Outcome",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
     }
   },
   "active": true,
@@ -1078,7 +1084,7 @@
     "executionOrder": "v1",
     "binaryMode": "separate"
   },
-  "versionId": "f21c2eaa-2e67-4201-a639-0a674dba9c63",
+  "versionId": "e6582682-86f4-4d69-9dea-0c692446f887",
   "meta": {
     "templateCredsSetupCompleted": true,
     "instanceId": "737dc2d2fdd870db3c00e9004ab56136d497c22adbb3cea3b47f263451c7680b"
