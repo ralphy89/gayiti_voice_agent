@@ -91,6 +91,27 @@ Return ONLY the structured output requested by the output parser.
 }
 ```
 
+### Validation + Fallback
+
+A validation Code node checks the agent output and applies a safe fallback when the response is invalid.
+```javascript
+const item = $input.first().json;
+const fallback = {
+  classifier: {
+    outcome: 'unknown',
+    interest_level: 'none',
+    confidence: 0,
+    fallback_used: true,
+    agent_error: item.error ? String(item.error) : 'classifier returned invalid output'
+  }
+};
+const o = item.output;
+if (!o || typeof o !== 'object') return [{ json: fallback }];
+const validLevels = ['high', 'medium', 'low', 'none'];
+const level = String(o.interest_level || '').toLowerCase();
+if (!o.outcome || !validLevels.includes(level)) return [{ json: fallback }];
+return [{ json: { classifier: { outcome: String(o.outcome), interest_level: level, confidence: typeof o.confidence === 'number' ? o.confidence : 0.5, fallback_used: false } } }];
+```
 ---
 
 ## 2. Extractor Agent
@@ -189,6 +210,43 @@ Return ONLY the structured output requested by the output parser.
     "summary"
   ]
 }
+```
+### Validation + Fallback
+
+A dedicated validation step verifies the extracted fields and uses fallback values when the agent returns invalid or incomplete data.
+
+```javascript
+const item = $input.first().json;
+const src = $('Outbound call simulation').first().json.output || {};
+const contact = $('Prepare contact Data').first().json.body || {};
+const fallback = {
+  extractor: {
+    contact_name: contact.name || null,
+    contact_email: contact.email || null,
+    phone_number: contact.phone || src.phone || null,
+    callback_time: null,
+    requested_information: null,
+    product_or_service: contact.service || null,
+    questions_or_concerns: [],
+    summary: src.summary || 'Call completed; extraction failed, using call summary.',
+    fallback_used: true,
+    agent_error: item.error ? String(item.error) : 'extractor returned invalid output'
+  }
+};
+const o = item.output;
+if (!o || typeof o !== 'object' || (!o.contact_name && !o.summary)) return [{ json: fallback }];
+return [{ json: { extractor: {
+  contact_name: o.contact_name ?? null,
+  contact_email: o.contact_email ?? null,
+  phone_number: o.phone_number ?? contact.phone ?? null,
+  callback_time: o.callback_time ?? null,
+  requested_information: o.requested_information ?? null,
+  product_or_service: o.product_or_service ?? contact.service ?? null,
+  questions_or_concerns: Array.isArray(o.questions_or_concerns) ? o.questions_or_concerns : [],
+  summary: o.summary ?? src.summary ?? null,
+  fallback_used: false
+} } }];
+
 ```
 
 ---
@@ -308,6 +366,31 @@ Note: if a result contains fallback_used: true, that agent output was invalid an
   "priority": "high",
   "reason": "The customer successfully renewed their car insurance policy and requested that the updated policy documents be sent to their email."
 }
+```
+### Validation + Fallback
+
+The validation step ensures that `next_action`, `priority`, and `reason` are usable before the workflow continues.
+
+```javascript
+const item = $input.first().json;
+const validActions = ['send_information', 'schedule_callback', 'follow_up', 'escalate', 'no_action'];
+const validPriorities = ['low', 'medium', 'high'];
+const o = item.output;
+if (!o || typeof o !== 'object' || !validActions.includes(o.next_action)) {
+  return [{ json: { output: {
+    next_action: 'follow_up',
+    priority: 'medium',
+    reason: 'Reasoner output unavailable or invalid; defaulting to follow_up.',
+    fallback_used: true,
+    agent_error: item.error ? String(item.error) : 'reasoner returned invalid output'
+  } } }];
+}
+return [{ json: { output: {
+  next_action: o.next_action,
+  priority: validPriorities.includes(o.priority) ? o.priority : 'medium',
+  reason: o.reason || 'No reason provided.',
+  fallback_used: false
+} } }];
 ```
 
 ---
