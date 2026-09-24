@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { AlertCircle, ArrowRight, Check, CheckCircle2, ChevronDown, Clipboard, Clock3, Loader2, Play, RotateCcw, Send, Sparkles, UserRound, Zap } from 'lucide-react'
 import { labelize, submitOutreach, titleCase, type OutreachRequest, type OutreachResult } from '@/lib/outreach'
 
@@ -21,4 +21,43 @@ function Panel({ title, children, className = '' }: { title: string; children: R
 
 function ResultView({ result, onReset }: { result: OutreachResult; onReset: () => void }) { const [copied, setCopied] = useState(false); const extraction = result.extraction; const decision = result.decision; const response = result.response; const classification = result.classification; const message = response?.message; const copy = async () => { if (!message) return; await navigator.clipboard.writeText(message); setCopied(true); setTimeout(() => setCopied(false), 1800) }; return <div className="flex flex-col gap-5"><div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between"><div><div className="flex items-center gap-2 text-[var(--success)]"><CheckCircle2 size={18} /><span className="text-xs font-semibold uppercase tracking-[0.12em]">Workflow complete</span></div><h2 className="mt-2 text-2xl font-semibold tracking-[-0.03em]">Outreach Result</h2><p className="mt-1 text-sm text-[var(--muted)]">Review the customer outcome and recommended follow-up.</p></div><button onClick={onReset} className="inline-flex h-10 items-center justify-center gap-2 rounded-lg border border-[var(--line)] bg-white px-4 text-sm font-semibold hover:bg-[#f8f9fb]"><RotateCcw size={15} />New Outreach</button></div><div className="grid grid-cols-2 gap-3 lg:grid-cols-4"><div className="rounded-xl border border-[var(--line)] bg-white p-4"><p className="text-xs text-[var(--muted)]">Status</p><div className="mt-2"><Badge tone="green">{result.call_status || 'Completed'}</Badge></div></div><div className="rounded-xl border border-[var(--line)] bg-white p-4"><p className="text-xs text-[var(--muted)]">Interest</p><div className="mt-2"><Badge tone="blue">{titleCase(result.interest_level || classification?.interest_level)}</Badge></div></div><div className="rounded-xl border border-[var(--line)] bg-white p-4"><p className="text-xs text-[var(--muted)]">Priority</p><div className="mt-2"><Badge tone={decision?.priority === 'high' ? 'amber' : 'neutral'}>{titleCase(decision?.priority)}</Badge></div></div><div className="rounded-xl border border-[var(--line)] bg-white p-4"><p className="text-xs text-[var(--muted)]">Next Action</p><p className="mt-2 text-sm font-semibold">{labelize(result.next_action || decision?.next_action)}</p></div></div><div className="grid gap-5 lg:grid-cols-[1.45fr_.85fr]"><main className="flex flex-col gap-5"><Panel title="Conversation Summary"><p className="mt-4 text-[15px] leading-7 text-[#344054]">{result.summary || extraction?.summary || 'No conversation summary was provided.'}</p></Panel><Panel title="Recommended Action"><div className="mt-4 rounded-lg border border-[#d5defa] bg-[var(--accent-soft)] p-4"><div className="flex flex-wrap items-center gap-2"><Zap size={16} className="text-[var(--accent)]" /><span className="text-sm font-semibold text-[#243b85]">{labelize(decision?.next_action || result.next_action)}</span><Badge tone="amber">{titleCase(decision?.priority)}</Badge></div><p className="mt-3 text-sm leading-6 text-[#475467]">{decision?.reason || 'No recommendation reason was provided.'}</p></div></Panel><Panel title="Generated Response"><div className="mt-4 rounded-lg bg-[#f8f9fb] p-4 text-sm leading-6 text-[#344054]">{message || 'No response message was generated.'}</div><div className="mt-4 flex flex-wrap items-center justify-between gap-3"><span className="text-xs text-[var(--muted)]">Follow-up required: <strong className="text-[#344054]">{response?.follow_up_required ? 'Yes' : 'No'}</strong></span><button onClick={copy} disabled={!message} className="inline-flex h-9 items-center gap-2 rounded-lg border border-[var(--line)] bg-white px-3 text-xs font-semibold hover:bg-[#f8f9fb] disabled:opacity-50">{copied ? <Check size={14} /> : <Clipboard size={14} />}{copied ? 'Copied' : 'Copy Response'}</button></div></Panel></main><aside className="flex flex-col gap-5"><Panel title="Customer"><div className="mt-5 flex flex-col gap-4"><InfoRow label="Name" value={extraction?.contact_name} icon={UserRound} /><InfoRow label="Email" value={extraction?.contact_email} /><InfoRow label="Phone" value={extraction?.phone_number} /><InfoRow label="Product / Service" value={extraction?.product_or_service} /><InfoRow label="Callback time" value={extraction?.callback_time} icon={Clock3} /></div></Panel><Panel title="Customer Needs"><div className="mt-5 flex flex-col gap-4"><InfoRow label="Requested information" value={extraction?.requested_information} />{extraction?.questions_or_concerns?.length ? <div><p className="text-xs text-[var(--muted)]">Questions or concerns</p><ul className="mt-2 flex flex-col gap-2">{extraction.questions_or_concerns.map((question) => <li key={question} className="flex gap-2 text-sm leading-5 text-[#344054]"><span className="mt-2 size-1.5 shrink-0 rounded-full bg-[var(--accent)]" />{question}</li>)}</ul></div> : null}</div></Panel><details className="rounded-xl border border-[var(--line)] bg-white p-5 shadow-[0_1px_2px_rgba(16,24,40,.03)]"><summary className="flex cursor-pointer list-none items-center justify-between text-sm font-semibold">AI Analysis<ChevronDown size={16} className="text-[var(--muted)]" /></summary><div className="mt-5 flex flex-col gap-3 text-sm"><div className="flex justify-between gap-3"><span className="text-[var(--muted)]">Outcome</span><span className="text-right text-[#344054]">{classification?.outcome || result.outcome || '—'}</span></div><div className="flex justify-between gap-3"><span className="text-[var(--muted)]">Interest level</span><span>{titleCase(classification?.interest_level || result.interest_level)}</span></div><div className="flex justify-between gap-3"><span className="text-[var(--muted)]">Confidence</span><span>{typeof classification?.confidence === 'number' ? `${Math.round(classification.confidence * 100)}%` : '—'}</span></div></div></details></aside></div></div> }
 
-export default function OutreachConsole() { const [result, setResult] = useState<OutreachResult | null>(null); const [processing, setProcessing] = useState(false); const [workflowError, setWorkflowError] = useState(''); const showResult = (next: OutreachResult) => { setProcessing(false); setWorkflowError(''); setResult(next) }; const retry = () => { setWorkflowError(''); setProcessing(false) }; return <><Header /><main className="mx-auto max-w-[1200px] px-5 py-8 lg:px-8 lg:py-10">{result ? <ResultView result={result} onReset={() => setResult(null)} /> : processing ? <Processing /> : workflowError ? <div className="mx-auto max-w-xl rounded-xl border border-[#f3c5ca] bg-white p-8 text-center"><div className="mx-auto flex size-11 items-center justify-center rounded-full bg-[#fff0f1] text-[var(--danger)]"><AlertCircle size={22} /></div><h2 className="mt-4 text-lg font-semibold">Unable to complete outreach</h2><p className="mt-2 text-sm text-[var(--muted)]">{workflowError}</p><button onClick={retry} className="mt-6 inline-flex h-10 items-center gap-2 rounded-lg bg-[var(--accent)] px-4 text-sm font-semibold text-white"><RotateCcw size={15} />Try Again</button></div> : <OutreachForm onStart={() => { setWorkflowError(''); setProcessing(true) }} onResult={showResult} onError={(message) => { setProcessing(false); setWorkflowError(message) }} />}</main></> }
+const RESULT_CACHE_KEY = 'gayiti:last-outreach-result'
+
+export default function OutreachConsole() {
+  const [result, setResult] = useState<OutreachResult | null>(() => {
+    if (typeof window === 'undefined') return null
+    try {
+      const cached = window.sessionStorage.getItem(RESULT_CACHE_KEY)
+      return cached ? JSON.parse(cached) as OutreachResult : null
+    } catch {
+      return null
+    }
+  })
+  const [processing, setProcessing] = useState(false)
+  const [workflowError, setWorkflowError] = useState('')
+
+  useEffect(() => {
+    if (!result) return
+    window.sessionStorage.setItem(RESULT_CACHE_KEY, JSON.stringify(result))
+  }, [result])
+
+  const showResult = (next: OutreachResult) => {
+    setProcessing(false)
+    setWorkflowError('')
+    setResult(next)
+  }
+
+  const startOutreach = () => {
+    window.sessionStorage.removeItem(RESULT_CACHE_KEY)
+    setResult(null)
+    setWorkflowError('')
+    setProcessing(true)
+  }
+
+  const retry = () => {
+    setWorkflowError('')
+    setProcessing(false)
+  }
+
+  return <><Header /><main className="mx-auto max-w-[1200px] px-5 py-8 lg:px-8 lg:py-10">{result ? <ResultView result={result} onReset={() => setResult(null)} /> : processing ? <Processing /> : workflowError ? <div className="mx-auto max-w-xl rounded-xl border border-[#f3c5ca] bg-white p-8 text-center"><div className="mx-auto flex size-11 items-center justify-center rounded-full bg-[#fff0f1] text-[var(--danger)]"><AlertCircle size={22} /></div><h2 className="mt-4 text-lg font-semibold">Unable to complete outreach</h2><p className="mt-2 text-sm text-[var(--muted)]">{workflowError}</p><button onClick={retry} className="mt-6 inline-flex h-10 items-center gap-2 rounded-lg bg-[var(--accent)] px-4 text-sm font-semibold text-white"><RotateCcw size={15} />Try Again</button></div> : <OutreachForm onStart={startOutreach} onResult={showResult} onError={(message) => { setProcessing(false); setWorkflowError(message) }} />}</main></>
+}

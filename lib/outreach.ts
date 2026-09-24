@@ -11,7 +11,27 @@ function isRecord(value: unknown): value is Record<string, unknown> {
 
 function normalizeOutreachResult(json: unknown): OutreachResult {
   const candidate = Array.isArray(json) ? json[0] : json
+
+  if (typeof candidate === 'string') {
+    try {
+      return normalizeOutreachResult(JSON.parse(candidate))
+    } catch {
+      throw new Error('Workflow returned an invalid response.')
+    }
+  }
+
   if (!isRecord(candidate)) throw new Error('Workflow returned an invalid response.')
+
+  // n8n can wrap the JSON payload in a `text` field, especially when the
+  // webhook response is produced by an AI node.
+  if (typeof candidate.text === 'string') {
+    try {
+      return normalizeOutreachResult(JSON.parse(candidate.text))
+    } catch {
+      throw new Error('Workflow returned an invalid response.')
+    }
+  }
+
   return candidate as OutreachResult
 }
 
