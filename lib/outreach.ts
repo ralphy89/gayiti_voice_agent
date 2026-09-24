@@ -8,7 +8,7 @@ export type OutreachResult = { call_status?: string; outcome?: string; interest_
 export async function submitOutreach(data: OutreachRequest): Promise<OutreachResult> {
   const webhookUrl = process.env.NEXT_PUBLIC_N8N_WEBHOOK_URL || 'https://gayiti.app.n8n.cloud/webhook-test/88903ce7-2386-4582-9f4d-06c8edd14555'
   const controller = new AbortController()
-  const timeout = setTimeout(() => controller.abort(), 60000)
+  const timeout = setTimeout(() => controller.abort(), 180000)
   try {
     const response = await fetch(webhookUrl, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data), signal: controller.signal })
     if (!response.ok) throw new Error(`Workflow returned ${response.status}`)
