@@ -6,8 +6,7 @@ export type GeneratedResponse = { message?: string; follow_up_required?: boolean
 export type OutreachResult = { call_status?: string; outcome?: string; interest_level?: string; callback_time?: string | null; summary?: string; next_action?: string; classification?: Classification; extraction?: Extraction; decision?: Decision; response?: GeneratedResponse }
 
 export async function submitOutreach(data: OutreachRequest): Promise<OutreachResult> {
-  const webhookUrl = process.env.NEXT_PUBLIC_N8N_WEBHOOK_URL
-  if (!webhookUrl) throw new Error('NEXT_PUBLIC_N8N_WEBHOOK_URL is not configured.')
+  const webhookUrl = process.env.NEXT_PUBLIC_N8N_WEBHOOK_URL || 'https://gayiti.app.n8n.cloud/webhook-test/88903ce7-2386-4582-9f4d-06c8edd14555'
   const controller = new AbortController()
   const timeout = setTimeout(() => controller.abort(), 60000)
   try {
