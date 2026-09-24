@@ -1,4 +1,4 @@
-export type OutreachRequest = { name: string; phone: string; business_name: string; service: string; call_reason: string; context: string; preferred_language: string }
+export type OutreachRequest = { name: string; customer_email: string; phone: string; business_name: string; service: string; call_reason: string; context: string; preferred_language: string }
 export type Classification = { outcome?: string; interest_level?: string; confidence?: number }
 export type Extraction = { contact_name?: string; contact_email?: string; phone_number?: string; callback_time?: string | null; requested_information?: string; product_or_service?: string; questions_or_concerns?: string[]; summary?: string }
 export type Decision = { next_action?: string; priority?: string; reason?: string }
