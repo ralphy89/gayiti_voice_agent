@@ -36,7 +36,7 @@ function normalizeOutreachResult(json: unknown): OutreachResult {
 }
 
 export async function submitOutreach(data: OutreachRequest): Promise<OutreachResult> {
-  const webhookUrl = process.env.NEXT_PUBLIC_N8N_WEBHOOK_URL || 'https://gayiti.app.n8n.cloud/webhook-test/88903ce7-2386-4582-9f4d-06c8edd14555'
+  const webhookUrl = process.env.NEXT_PUBLIC_N8N_WEBHOOK_URL || 'https://gayiti.app.n8n.cloud/webhook/88903ce7-2386-4582-9f4d-06c8edd14555'
   const controller = new AbortController()
   const timeout = setTimeout(() => controller.abort(), 180000)
   try {
