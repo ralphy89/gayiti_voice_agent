@@ -1,4 +1,59 @@
-# Multi-Agent Team — Agent Documentation
+# `Week 4` - Production Prototype
+
+The workflow is now connected to a responsive web application, turning the n8n + multi-agent system into a usable end-to-end product.
+
+**Live App:** https://gayiti.ralphydumera.com
+
+## What's New
+
+* Production web interface built with **Next.js**
+* Real submissions sent to the **n8n production webhook**
+* Results from the multi-agent workflow displayed directly in the UI
+* Visible validation and workflow error states
+* Responsive design for desktop and mobile
+* Deployed publicly with no login required
+
+## Application Flow
+
+```text id="7g4wfs"
+Web App
+   ↓
+n8n Webhook
+   ↓
+Call Simulation
+   ↓
+Multi-Agent Team
+   ↓
+Combiner / Validation
+   ↓
+Slack / Google Sheets
+   ↓
+Result displayed in Web App
+```
+
+## Run Locally
+
+```bash id="w0oz12"
+npm install
+npm run dev
+```
+
+Configure the n8n webhook in `.env.local`:
+
+```env id="ahw7t1"
+NEXT_PUBLIC_N8N_WEBHOOK_URL=your_webhook_url
+```
+
+## Known Limitations
+
+* Calls are currently simulated by an LLM rather than a live voice provider.
+* Processing time depends on n8n and LLM provider latency.
+* External integrations may be affected by free-tier limits.
+* Authentication is not implemented for this prototype.
+---
+
+
+# `Week 3 `- Multi-Agent Team — Agent Documentation
 
 The workflow uses a team of four specialized AI agents. Each agent has one clearly defined responsibility, a dedicated system prompt, and a structured output schema. The agents run in parallel when their tasks are independent, then their outputs are combined and passed to the next agent.
 
