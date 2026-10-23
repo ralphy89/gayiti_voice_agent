@@ -1,57 +1,98 @@
-# `Week 4` - Production Prototype
+# AI Outreach Console
 
-The workflow is now connected to a responsive web application, turning the n8n + multi-agent system into a usable end-to-end product.
+**AI-powered customer outreach, conversation analysis, and next-action recommendations.**
 
-**Live App:** https://gayiti.ralphydumera.com
+**Live application:** https://gayiti.ralphydumera.com
 
-## What's New
+## Problem
 
-* Production web interface built with **Next.js**
-* Real submissions sent to the **n8n production webhook**
-* Results from the multi-agent workflow displayed directly in the UI
-* Visible validation and workflow error states
-* Responsive design for desktop and mobile
-* Deployed publicly with no login required
+Customer outreach requires gathering context, understanding conversations, and identifying the next step. An automation built entirely inside n8n is difficult for a non-technical operator to use directly. This prototype provides an accessible interface for launching outreach requests and reviewing actionable results.
 
-## Application Flow
+## What it does
 
-```text id="7g4wfs"
-Web App
-   ↓
-n8n Webhook
-   ↓
-Call Simulation
-   ↓
-Multi-Agent Team
-   ↓
-Combiner / Validation
-   ↓
-Slack / Google Sheets
-   ↓
-Result displayed in Web App
+I built a responsive frontend using **v0 / Next.js**, with **n8n** handling orchestration. Operators submit contact and business information, and the existing LLM-powered workflow simulates an outbound conversation. Four specialized agents classify the outcome, extract relevant information, decide the next action, and compose a response. The Combiner produces a structured result with fallback handling; business routing uses Slack or Google Sheets, and a **Respond to Webhook** step sends the result back to the application.
+
+**This prototype simulates outbound conversations with an LLM; it does not place real telephone calls.**
+
+## Live workflow
+
+```text
+Browser (AI Outreach Console)
+    │  POST request
+    ▼
+n8n Webhook → Input validation → LLM call simulation
+                                     │
+                        ┌────────────┴───────────┐
+                        ▼                        ▼
+                    Classifier                Extractor
+                        └────────────┬───────────┘
+                                     ▼
+                                   Merge
+                                     ▼
+                                  Reasoner
+                                     ▼
+                                  Composer
+                                     ▼
+                           Combiner / fallbacks
+                                     ▼
+                         Business routing
+                         ├── Slack (high interest)
+                         └── Google Sheets (other)
+                                     ▼
+                             Respond to Webhook
+                                     ▼
+                             Frontend result
 ```
 
-## Run Locally
+## User experience
 
-```bash id="w0oz12"
+The operator fills in the contact name, email, phone, business name, service, call reason, context, and preferred language. The app shows a processing state while the workflow runs, then displays the outcome, interest level, conversation summary, customer needs, recommended action, and generated response. Form validation and request failures are shown in the interface. The layout is responsive for desktop and mobile.
+
+## Existing workflow screenshot
+
+The original n8n workflow screenshot is preserved below in the **Week 3 agent documentation**. No additional images have been added.
+
+## Run locally
+
+**Prerequisites:** Node.js, npm, and access to a running n8n workflow with its production webhook enabled.
+
+```bash
+git clone https://github.com/ralphy89/gayiti_voice_agent.git
+cd gayiti_voice_agent
 npm install
+```
+
+Create `.env.local` in the project root:
+
+```env
+NEXT_PUBLIC_N8N_WEBHOOK_URL=https://your-n8n-instance/webhook/your-webhook-id
+```
+
+Start the frontend:
+
+```bash
 npm run dev
 ```
 
-Configure the n8n webhook in `.env.local`:
+Open http://localhost:3000. Use a **production** n8n webhook URL, not the temporary test webhook. The webhook must accept POST requests and return the final structured JSON result. Because the browser calls n8n directly, the n8n endpoint must permit requests from the frontend origin (CORS). Do not put API keys or other secrets in `NEXT_PUBLIC_` variables.
 
-```env id="ahw7t1"
-NEXT_PUBLIC_N8N_WEBHOOK_URL=your_webhook_url
-```
+## Reliability and verification
 
-## Known Limitations
+Before Demo Day, verify a successful end-to-end submission, required-field validation, visible network/workflow errors, result rendering, mobile usability, and browser-console output. The repository currently provides a lint script (`npm run lint`); automated tests should be added as part of final polish. These checks are a verification checklist, not a claim that every test has already passed.
 
-* Calls are currently simulated by an LLM rather than a live voice provider.
-* Processing time depends on n8n and LLM provider latency.
-* External integrations may be affected by free-tier limits.
-* Authentication is not implemented for this prototype.
+## Known limitations
+
+- Voice calls are LLM-simulated rather than made through a live telephony provider.
+- Response time depends on n8n and the LLM provider; free-tier quotas and rate limits can interrupt processing.
+- The public prototype does not include authentication or a full CRM.
+- LLM results can vary across runs; fallback logic does not guarantee perfect outputs.
+- The frontend depends on an accessible, correctly configured n8n webhook.
+
+## Next steps
+
+Add automated form/API tests, improve monitoring and deployment configuration, document webhook contracts for handoff, and evaluate authenticated access, persistent history, and real voice-provider integration.
+
 ---
-
 
 # `Week 3 `- Multi-Agent Team — Agent Documentation
 
