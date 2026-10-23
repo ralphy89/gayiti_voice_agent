@@ -76,9 +76,17 @@ npm run dev
 
 Open http://localhost:3000. Use a **production** n8n webhook URL, not the temporary test webhook. The webhook must accept POST requests and return the final structured JSON result. Because the browser calls n8n directly, the n8n endpoint must permit requests from the frontend origin (CORS). Do not put API keys or other secrets in `NEXT_PUBLIC_` variables.
 
-## Reliability and verification
+## Reliability & Error Handling
 
-Before Demo Day, verify a successful end-to-end submission, required-field validation, visible network/workflow errors, result rendering, mobile usability, and browser-console output. The repository currently provides a lint script (`npm run lint`); automated tests should be added as part of final polish. These checks are a verification checklist, not a claim that every test has already passed.
+AI Outreach Console incorporates error-handling mechanisms across the frontend and n8n workflow.
+
+- **Input validation:** Required fields are validated before submission.
+- **API error handling:** Network failures, unsuccessful responses, and request timeouts are handled by the frontend.
+- **Agent validation:** Structured outputs are checked to reduce the impact of missing or invalid information.
+- **Fallback mechanisms:** The workflow provides default values when agent outputs are incomplete or unusable.
+- **User feedback:** Processing states and error messages keep users informed throughout the interaction.
+
+These mechanisms improve workflow resilience while maintaining a consistent user experience.
 
 ## Known limitations
 
