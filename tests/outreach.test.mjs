@@ -4,6 +4,7 @@ import { submitOutreach, labelize, titleCase } from '../lib/outreach.ts'
 
 const request = { name: 'Marie Joseph', email: 'marie@example.com', phone: '+50912345678', business_name: 'Example Co', service: 'Renewal', call_reason: 'Renew', context: 'Policy expiring', preferred_language: 'English' }
 const valid = { call_status: 'completed', outcome: 'interested', interest_level: 'high', summary: 'Interested in renewal', next_action: 'follow_up' }
+process.env.NEXT_PUBLIC_N8N_WEBHOOK_URL = 'https://example.org/webhook/production'
 const originalFetch = globalThis.fetch
 const originalUrl = process.env.NEXT_PUBLIC_N8N_WEBHOOK_URL
 const restore = () => { globalThis.fetch = originalFetch; if (originalUrl === undefined) delete process.env.NEXT_PUBLIC_N8N_WEBHOOK_URL; else process.env.NEXT_PUBLIC_N8N_WEBHOOK_URL = originalUrl }
@@ -30,5 +31,15 @@ test('rejects empty array and non-object response', async () => { globalThis.fet
 test('reports non-success HTTP status', async () => { globalThis.fetch = async () => new Response('failed', { status: 503 }); await assert.rejects(submitOutreach(request), /503/) })
 test('propagates network failures', async () => { globalThis.fetch = async () => { throw new TypeError('network unavailable') }; await assert.rejects(submitOutreach(request), /network unavailable/) })
 test('reports aborted requests as timeouts', async () => { globalThis.fetch = async () => { throw new DOMException('Aborted', 'AbortError') }; await assert.rejects(submitOutreach(request), /timed out/) })
-test.todo('rejects acknowledgment-only payload (current production bug: {message: "Workflow has started"} is accepted)')
-test.todo('requires explicit production webhook URL (current code falls back to webhook-test)')
+test('rejects acknowledgment-only and incomplete results', async () => {
+  globalThis.fetch = async () => Response.json({ message: 'Workflow has started' })
+  await assert.rejects(submitOutreach(request), /incomplete result/)
+  globalThis.fetch = async () => Response.json({ summary: 'Done', outcome: 'interested' })
+  await assert.rejects(submitOutreach(request), /incomplete result/)
+})
+test('requires a configured production webhook URL', async () => {
+  delete process.env.NEXT_PUBLIC_N8N_WEBHOOK_URL
+  await assert.rejects(submitOutreach(request), /Configure NEXT_PUBLIC_N8N_WEBHOOK_URL/)
+  process.env.NEXT_PUBLIC_N8N_WEBHOOK_URL = 'https://example.org/webhook-test/abc'
+  await assert.rejects(submitOutreach(request), /Configure NEXT_PUBLIC_N8N_WEBHOOK_URL/)
+})
