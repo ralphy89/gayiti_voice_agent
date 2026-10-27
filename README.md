@@ -88,6 +88,29 @@ AI Outreach Console incorporates error-handling mechanisms across the frontend a
 
 These mechanisms improve workflow resilience while maintaining a consistent user experience.
 
+## Automated testing — Gayiti Module 6 (Path 1)
+
+The project includes automated API integration tests and an optional live n8n integration test. The automated suite checks request payloads, JSON response normalization, malformed responses, HTTP/network failures, abort handling, and regression cases for incomplete results and webhook configuration.
+
+**Run the unit tests locally** (Node.js 22+):
+
+```bash
+npm ci
+node --experimental-strip-types --test --experimental-test-coverage tests/outreach.test.mjs
+```
+
+**Optional live n8n integration test** (not part of normal CI):
+
+```bash
+RUN_N8N_INTEGRATION=1 N8N_INTEGRATION_WEBHOOK_URL=https://your-n8n-instance/webhook/your-id node --experimental-strip-types --test tests/n8n.integration.test.mjs
+```
+
+The live integration test may generate Slack notifications or Google Sheets records. Use a safe testing environment. A successful manual production test of the deployed frontend-to-n8n workflow was reported on October 27, 2026; this is separate from an automated integration test run.
+
+**CI configuration:** `.github/workflows/test.yml` defines a GitHub Actions job that installs dependencies, runs the unit suite with coverage, and builds the application. CI execution has **not been verified** and is not being claimed as passing.
+
+**Evidence and scope:** The [test report](docs/TEST_REPORT.md) documents the initial local test run (10 passed, 0 failed; 100% line and 90% branch coverage for `lib/outreach.ts` before the latest fixes), the subsequent regression tests, and remaining limitations. Updated coverage has not been measured. The testing changes are in the `test/stage-2-api-coverage` branch / draft PR #4, not yet merged into `main`.
+
 ## Known limitations
 
 - Voice calls are LLM-simulated rather than made through a live telephony provider.
@@ -98,7 +121,7 @@ These mechanisms improve workflow resilience while maintaining a consistent user
 
 ## Next steps
 
-Add automated form/API tests, improve monitoring and deployment configuration, document webhook contracts for handoff, and evaluate authenticated access, persistent history, and real voice-provider integration.
+Expand automated UI and workflow tests, verify CI execution when appropriate, improve monitoring and deployment configuration, and evaluate authenticated access, persistent history, and real voice-provider integration.
 
 ---
 

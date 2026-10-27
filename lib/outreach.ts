@@ -32,11 +32,19 @@ function normalizeOutreachResult(json: unknown): OutreachResult {
     }
   }
 
+  // Reject acknowledgments and incomplete payloads before the UI shows success.
+  const hasText = (value: unknown): value is string => typeof value === 'string' && value.trim().length > 0
+  if (!hasText(candidate.summary) || !hasText(candidate.next_action) || !hasText(candidate.outcome)) {
+    throw new Error('Workflow returned an incomplete result.')
+  }
   return candidate as OutreachResult
 }
 
 export async function submitOutreach(data: OutreachRequest): Promise<OutreachResult> {
-  const webhookUrl = process.env.NEXT_PUBLIC_N8N_WEBHOOK_URL || 'https://gayiti.app.n8n.cloud/webhook-test/88903ce7-2386-4582-9f4d-06c8edd14555'
+  const webhookUrl = process.env.NEXT_PUBLIC_N8N_WEBHOOK_URL
+  if (!webhookUrl || !/^https?:\/\//.test(webhookUrl) || webhookUrl.includes('/webhook-test/')) {
+    throw new Error('Configure NEXT_PUBLIC_N8N_WEBHOOK_URL with an active n8n production webhook URL.')
+  }
   const controller = new AbortController()
   const timeout = setTimeout(() => controller.abort(), 180000)
   try {
